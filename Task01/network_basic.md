@@ -318,10 +318,6 @@ Có 2 mô hình mạng chính: OSI và mô hình mạng TCP/IP
 > * **NS Record (Name Server):** Chỉ định máy chủ DNS nào đang nắm quyền quản lý bản ghi của tên miền này.
 > * **TXT Record:** Chứa thông tin văn bản (thường dùng để xác thực tên miền, cài đặt cấu hình chống spam email như SPF, DKIM).
 
-Đúng vậy! Địa chỉ IP và các dải lớp IP chính là **nền móng hạ tầng (Tầng Mạng - Network Layer)** để các dịch vụ như DHCP, DNS hay HTTP có thể vận hành được.
-
-Dưới đây là bản tổng hợp kiến thức về **Địa chỉ IPv4, Các lớp IP, Public/Private IP và CIDR** được thiết kế chuẩn theo phong cách ngắn gọn, dễ hiểu và dễ tra cứu của bạn.
-
 ---
 
 ## II. ĐỊA CHỈ IP (IPv4) & CÁC DẢI IP
