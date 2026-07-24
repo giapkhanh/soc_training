@@ -644,8 +644,423 @@ sourcetype=access_combined | transaction clientip host maxspan=30s maxpause=5s s
 * Lệnh `transaction` sẽ tự động tạo ra hai trường mới là `duration` (tổng thời gian diễn ra giao dịch) và `eventcount` (số lượng sự kiện trong giao dịch đó).
 * *Lưu ý hiệu năng:* `transaction` tiêu tốn nhiều tài nguyên bộ nhớ hơn so với `stats`, do đó nếu chỉ cần đếm hoặc nhóm cơ bản, bạn nên ưu tiên sử dụng `stats` trước.
 
+---
+
+## Nhóm 4: Chuyên sâu - Trích xuất, Làm giàu & Nhóm chuỗi dữ liệu
+
+### 1. `rex`
+
+> **Mô tả vắn tắt:** Sử dụng biểu thức chính quy (Regular Expression - RegEx) để trích xuất các trường dữ liệu mới từ văn bản thô (`_raw`) hoặc từ một trường hiện có ngay tại thời điểm truy vấn (search-time).
+
+* **Cú pháp:** `| rex [field=<tên_trường>] "<regex_pattern>"`
+* **Giải thích tham số:**
+* `field`: (Tùy chọn) Trường dữ liệu cần áp dụng RegEx (mặc định là `_raw`).
+* `<regex_pattern>`: Biểu thức RegEx chứa các nhóm được đặt tên theo dạng `(?<tên_field_mới>pattern)` để gán giá trị trích xuất vào trường mới.
+
+
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | rex field=_raw "Useragent: (?<user_agent>.*) - IP"
+
+```
+
+
+* **Lưu ý / Tips:**
+* `rex` rất hữu ích khi dữ liệu của bạn chưa được Splunk tự động trích xuất field sẵn ở bước Indexing.
+
 
 
 ---
 
-Chúng ta đã hoàn thành xong toàn bộ **4 Nhóm Command cơ bản & nâng cao**. Tiếp theo bạn muốn chuyển sang phần danh sách các hàm trong **`eval` (Common Eval Functions)** hay hàm trong **`stats` (Common Stats Functions)**? Hãy ra lệnh nhé!
+### 2. `lookup`
+
+> **Mô tả vắn tắt:** Mở rộng và làm giàu dữ liệu bằng cách đối chiếu một trường trong sự kiện với bảng dữ liệu bên ngoài (tệp CSV, KV Store, hoặc cơ sở dữ liệu) để tự động thêm các trường thông tin tương ứng.
+
+* **Cú pháp:** `| lookup <tên_file_lookup> <trường_đối_chiếu_sự_kiện> AS <trường_đối_chiếu_lookup> OUTPUT <trường_cần_lấy_1> [trường_cần_lấy_2 ...]`
+* **Giải thích tham số:**
+* `<tên_file_lookup>`: Tên định danh của bảng Lookup đã được định nghĩa trong Splunk.
+* `AS`: Dùng để liên kết tên trường trong log với tên cột tương ứng trong file Lookup nếu chúng khác tên.
+* `OUTPUT`: Chỉ định rõ danh sách các cột/trường từ bảng Lookup mà bạn muốn thêm vào kết quả tìm kiếm.
+
+
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | lookup usertable.csv clientip AS ip OUTPUT user_name, user_department
+
+```
+
+
+* **Lưu ý / Tips:**
+* Việc chỉ định rõ tham số `OUTPUT` giúp tối ưu hiệu năng vì Splunk chỉ lấy đúng những thông tin bạn thực sự cần thay vì tải toàn bộ cột từ file lookup.
+
+
+
+---
+
+### 3. `transaction`
+
+> **Mô tả vắn tắt:** Gom nhóm các sự kiện riêng lẻ có liên quan thành một chuỗi giao dịch (Transaction) dựa trên các trường chung (như Session ID, IP, User) và các giới hạn về mặt thời gian.
+
+* **Cú pháp:** `| transaction <tên_trường_1> [tên_trường_2 ...] [maxspan=<thời_gian>] [maxpause=<thời_gian>] [startswith=<dieu_kien>] [endswith=<dieu_kien>]`
+* **Giải thích tham số:**
+* `<tên_trường>`: Các trường dùng để xác định các event thuộc cùng một giao dịch (ví dụ: `clientip`, `sessionid`).
+* `maxspan`: Thời lượng tối đa cho toàn bộ một giao dịch (ví dụ: `maxspan=30m` - tổng chuỗi không quá 30 phút).
+* `maxpause`: Khoảng thời gian dừng/ngắt tối đa giữa 2 sự kiện liên tiếp trong cùng giao dịch (ví dụ: `maxpause=5s`).
+* `startswith` / `endswith`: Điều kiện đánh dấu sự kiện bắt đầu hoặc kết thúc của giao dịch.
+
+
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | transaction clientip host maxspan=30s maxpause=5s startswith="login" endswith="logout"
+
+```
+
+
+* **Lưu ý / Tips:**
+* Lệnh `transaction` sẽ tự động tạo ra hai trường mới là `duration` (tổng thời gian diễn ra giao dịch) và `eventcount` (số lượng sự kiện trong giao dịch đó).
+* *Lưu ý hiệu năng:* `transaction` tiêu tốn nhiều tài nguyên bộ nhớ hơn so với `stats`, do đó nếu chỉ cần đếm hoặc nhóm cơ bản, bạn nên ưu tiên sử dụng `stats` trước.
+
+
+
+---
+
+# Danh sách các hàm Thống kê phổ biến (Common Stats Functions)
+
+> Các hàm này được sử dụng làm tham số trong các lệnh thống kê như `stats`, `chart`, `timechart`, và `mstats` để gom nhóm, tính toán chỉ số, hoặc hợp nhất dữ liệu từ tập sự kiện.
+
+---
+
+## Nhóm 1: Thống kê Cơ bản & Đếm (Counting & Aggregations)
+
+### 1. `count(X)`
+
+> **Mô tả vắn tắt:** Đếm số lượng sự kiện xuất hiện. Nếu truyền vào trường $X$, chỉ đếm những sự kiện mà trường $X$ có giá trị (không `NULL`).
+
+* **Cú pháp:** `count([truong])` hoặc `count(eval(dieu_kien))`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats count, count(clientip) as ip_count, count(eval(status>=400)) as error_count by host
+
+```
+
+
+
+---
+
+### 2. `dc(X)` *(Distinct Count)*
+
+> **Mô tả vắn tắt:** Đếm số lượng giá trị **duy nhất (không trùng lặp)** của trường $X$.
+
+* **Cú pháp:** `dc(truong)`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats dc(clientip) as unique_users by uri
+
+```
+
+
+
+---
+
+### 3. `sum(X)` / `sumsq(X)`
+
+> **Mô tả vắn tắt:**
+> * `sum(X)`: Tính tổng giá trị của tất cả các bản ghi trong trường $X$.
+> * `sumsq(X)`: Tính tổng bình phương các giá trị trong trường $X$.
+> 
+> 
+
+* **Cú pháp:** `sum(truong_so)` / `sumsq(truong_so)`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats sum(bytes) as total_bytes_sent
+
+```
+
+
+
+---
+
+### 4. `avg(X)`
+
+> **Mô tả vắn tắt:** Tính giá trị trung bình cộng (Average) của trường $X$. *(Có thể dùng ký tự đại diện `*` cho tên trường, ví dụ: `avg(*delay)`)*.
+
+* **Cú pháp:** `avg(truong_so)`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats avg(response_time) as avg_response_time by status
+
+```
+
+
+
+---
+
+## Nhóm 2: So sánh & Bách phân vị (Min/Max & Percentiles)
+
+### 1. `min(X)` / `max(X)`
+
+> **Mô tả vắn tắt:** Tìm giá trị nhỏ nhất (`min`) hoặc lớn nhất (`max`) của trường $X$. *(Nếu dữ liệu là dạng chuỗi chữ, kết quả sẽ dựa trên thứ tự bảng chữ cái Alphabet)*.
+
+* **Cú pháp:** `min(truong)` / `max(truong)`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats min(response_time), max(response_time) by host
+
+```
+
+
+
+---
+
+### 2. `median(X)` / `mode(X)`
+
+> **Mô tả vắn tắt:**
+> * `median(X)`: Tìm giá trị trung vị (giá trị nằm ở chính giữa tập dữ liệu đã sắp xếp) của trường $X$.
+> * `mode(X)`: Tìm giá trị xuất hiện với tần suất nhiều nhất của trường $X$.
+> 
+> 
+
+* **Cú pháp:** `median(truong)` / `mode(truong)`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats median(bytes), mode(status) by host
+
+```
+
+
+
+---
+
+### 3. `perc<X>(Y)`
+
+> **Mô tả vắn tắt:** Trả về giá trị đạt mốc bách phân vị thứ $X$ (Percentile) của trường $Y$ (ví dụ: `perc95(response_time)` lấy mốc bách phân vị 95%).
+
+* **Cú pháp:** `perc<X>(truong)`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats perc95(response_time) as p95_latency, perc99(response_time) as p99_latency
+
+```
+
+
+
+---
+
+## Nhóm 3: Độ biến thiên & Phân tán (Variability & Dispersion)
+
+### 1. `range(X)`
+
+> **Mô tả vắn tắt:** Tính khoảng biến thiên (hiệu số giữa giá trị lớn nhất và giá trị nhỏ nhất: $Max - Min$) của trường $X$.
+
+* **Cú pháp:** `range(truong_so)`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats range(response_time) as latency_range by host
+
+```
+
+
+
+---
+
+### 2. `stdev(X)` / `stdevp(X)`
+
+> **Mô tả vắn tắt:**
+> * `stdev(X)`: Tính độ lệch chuẩn mẫu (Sample Standard Deviation) của trường $X$.
+> * `stdevp(X)`: Tính độ lệch chuẩn tổng thể (Population Standard Deviation) của trường $X$.
+> 
+> 
+
+* **Cú pháp:** `stdev(truong_so)` / `stdevp(truong_so)`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats stdev(bytes) as bytes_std_dev by status
+
+```
+
+
+
+---
+
+### 3. `var(X)`
+
+> **Mô tả vắn tắt:** Tính phương sai mẫu (Sample Variance) của trường $X$.
+
+* **Cú pháp:** `var(truong_so)`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats var(response_time) as latency_variance
+
+```
+
+
+
+---
+
+## Nhóm 4: Thứ tự Thời gian & Liệt kê Giá trị (Values & Chronology)
+
+### 1. `earliest(X)` / `latest(X)`
+
+> **Mô tả vắn tắt:** Trả về giá trị của trường $X$ xuất hiện sớm nhất (`earliest`) hoặc mới nhất (`latest`) theo thứ tự thời gian.
+
+* **Cú pháp:** `earliest(truong)` / `latest(truong)`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats earliest(_time) as first_seen, latest(status) as current_status by clientip
+
+```
+
+
+
+---
+
+### 2. `values(X)`
+
+> **Mô tả vắn tắt:** Gom tất cả các giá trị duy nhất của trường $X$ thành một danh sách đa giá trị (Multivalued entry), sắp xếp theo thứ tự bảng chữ cái.
+
+* **Cú pháp:** `values(truong)`
+* **Ví dụ thực tế:**
+```splunk
+sourcetype=access_combined | stats values(status) as all_statuses, values(uri) as visited_uris by clientip
+
+```
+
+---
+
+# Các ví dụ truy vấn thực tế (Search Examples)
+
+## 1. Lọc & Sắp xếp dữ liệu (Filter & Order Results)
+
+* **Lấy ra 20 kết quả đầu tiên:**
+```splunk
+... | head 20
+
+```
+
+
+* **Lấy 20 kết quả cuối cùng theo thứ tự ngược lại:**
+```splunk
+... | tail 20
+
+```
+
+
+* **Đảo ngược thứ tự tập kết quả:**
+```splunk
+... | reverse
+
+```
+
+
+* **Sắp xếp theo IP tăng dần, sau đó theo URL giảm dần:**
+```splunk
+... | sort ip, -url
+
+```
+
+
+
+---
+
+## 2. Gom nhóm & Chuỗi giao dịch (Group Results)
+
+* **Gom nhóm sự kiện có cùng IP, bắt đầu bằng `signon` và kết thúc bằng `purchase`:**
+```splunk
+... | transaction clientip startswith="signon" endswith="purchase"
+
+```
+
+
+* **Gom các sự kiện có cùng `host` và `cookie` trong khoảng 30 giây, không nghỉ quá 5 giây:**
+```splunk
+... | transaction host cookie maxspan=30s maxpause=5s
+
+```
+
+
+* **Gom cụm kết quả tương đồng (Cluster) và lấy 20 cụm lớn nhất:**
+```splunk
+... | cluster t=0.9 showcount=true | sort limit=20 -cluster_count
+
+```
+
+
+
+---
+
+## 3. Báo cáo Thống kê & Biểu đồ (Reporting & Visualization)
+
+* **Tạo bảng đếm sự kiện và hiển thị biểu đồ nhỏ (sparkline):**
+```splunk
+... | stats sparkline count by host
+
+```
+
+
+* **Thống kê thời gian đếm sự kiện từ nguồn web phân theo host:**
+```splunk
+... | timechart count by host
+
+```
+
+
+* **Tính giá trị trung bình CPU mỗi phút cho từng host:**
+```splunk
+... | timechart span=1m avg(CPU) by host
+
+```
+
+
+* **Thống kê giá trị trung bình của tất cả các trường có hậu tố `lay` (như delay, xdelay):**
+```splunk
+... | stats avg(*lay) by date_hour
+
+```
+
+
+* **Lấy Top 20 URL xuất hiện nhiều nhất:**
+```splunk
+... | top limit=20 url
+
+```
+
+
+
+---
+
+## 4. Thống kê Bổ sung & Báo cáo Nâng cao (Advanced Reporting)
+
+* **Tính thời lượng trung bình toàn cục và thêm trường `avgdur` vào từng event gốc:**
+```splunk
+... | eventstats avg(duration) as avgdur
+
+```
+
+
+* **Tính tổng dồn (cumulative sum) của dung lượng `bytes` theo thời gian:**
+```splunk
+... | streamstats sum(bytes) as bytes_total | timechart max(bytes_total)
+
+```
+
+
+* **Dự báo xu hướng dựa trên biểu đồ thời gian (Predictive Analytics):**
+```splunk
+... | timechart count | predict count
+
+```
+
+
+* **Tính đường trung bình động (Moving Average) cho 5 sự kiện gần nhất:**
+```splunk
+... | timechart count | trendline sma5(count) as smoothed_count
+
+```
+
+
+* **Liệt kê danh sách tên tất cả các metric trong chỉ mục `_metrics`:**
+```splunk
+| mcatalog values(metric_name) WHERE index=_metrics
+
+```
