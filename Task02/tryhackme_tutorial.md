@@ -84,7 +84,90 @@ Giai đoạn này tạm thời bỏ qua cái đống Regex đáng ghét, có th�
 
 https://help.splunk.com/en/splunk-enterprise/spl-search-reference/10.4/search-commands/regex
 
-* **Ví dụ**: Dùng regex để giới hạn các fields có đuôi `.exe`
+* **Ví dụ**: Dùng regex để giới hạn các field `Value` có đuôi `.exe`
   ```powershell
   index = windowslogs | regex Image = "\.exe$"
   ```
+
+### Cấu trúc hóa kết quả tìm kiếm 
+
+#### Lệnh `table`
+
+* Lệnh `table` này giúp giới hạn những fields cần đọc thành bảng gọn gàng.
+
+```powershell
+index=windowslogs | table _time EventID Hostname SourceName
+```
+
+#### Các lệnh khác
+
+Ngoài `table` còn một số lệnh khác cũng giúp cấu trúc hóa (structuring) kết quả:
+
+* Lệnh `head`:
+
+  Giới hạn trả về số kết quả mới nhất, tùy chỉnh số lượng.
+
+  ```powershell
+  index=windowslogs | head 2
+  ```
+
+* Lệnh `tail`:
+
+  Giới hạn số kết quả cũ nhất, tùy chỉnh số lượng.
+
+  ```powershell
+  index=windowslogs | tail 20
+  ```
+
+* Lệnh `sort`:
+
+  Sắp xếp kết quả trả về theo thứ tự dựa vào field được chỉ định
+
+  ```powershell
+  index=windowslogs | sort User
+  ```
+
+* Lệnh `reverse`:
+
+  Đảo ngược thứ tự hiển thị được sắp xếp ban đầu.
+
+  ```powershell
+  index=windowslogs | reverse
+  ```
+
+#### Dùng `_time` kết hợp với `table` để sắp xếp kết quả theo timeline
+
+Cách này thuận tiện để theo dõi theo thời gian, lại vừa có thể thêm bớt các fields tùy ý.
+
+```powershell
+index = windowslogs Hostname = Salena.Adam
+| table _time Hostname EventID Category
+| reverse
+```
+
+#### Subsearches
+
+Kết hợp `join` với subsearch `[ ]` ta có thể cho ra bảng kết quả giống kiểu như join thêm vài cột vào 1 bảng trong SQL Server.
+
+```powershell
+index=windowslogs EventID=1
+| join LogonId
+    [ search index=windowslogs EventID=4624
+    | rename TargetLogonId as LogonId
+    | fields LogonId LogonType IpAddress]
+| table _time Image User LogonType IpAddress
+```
+
+### Tra cứu EventID
+
+* Nơi tra cứu EventID (Mã sự kiện Windows):
+
+  https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/default.aspx
+
+* Tra cứu SID (Mã định danh tài khoản):
+
+  https://learn.microsoft.com/en-us/windows/win32/secauthz/well-known-sids
+
+* Tra cứu tiến trình process, PID, PPID (tóm lại là để nhận diện hành vi của cái `.exe` đó làm gì)
+
+  https://lolbas-project.github.io/
