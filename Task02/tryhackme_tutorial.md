@@ -40,8 +40,8 @@
 ---
 
 ### Dấu `" "` và dấu `()`:
-    * Dùng `" "` để biểu thị một string
-    * Dùng `()` để gom các biểu thức logic, đặt đúng mức độ ưu tiên.
+  * Dùng `" "` để biểu thị một string
+  * Dùng `()` để gom các biểu thức logic, đặt đúng mức độ ưu tiên.
 
 ---
 
@@ -77,3 +77,14 @@
         index=jsondata
         | rename request.* as * // request.path -> path; request.ip -> ip
         ```
+
+### Regex
+
+Giai đoạn này tạm thời bỏ qua cái đống Regex đáng ghét, có thể tạm thời xem qua ở đây
+
+https://help.splunk.com/en/splunk-enterprise/spl-search-reference/10.4/search-commands/regex
+
+* **Ví dụ**: Dùng regex để giới hạn các fields có đuôi `.exe`
+  ```powershell
+  index = windowslogs | regex Image = "\.exe$"
+  ```
