@@ -4,11 +4,13 @@ Có 2 mô hình mạng chính: OSI và mô hình mạng TCP/IP
 
 * Mô hình OSI là mô hình được ISO chuẩn hóa gồm 7 tầng. Trên thực tế các hệ thống mạng gần như khó mà tách biệt các tầng riêng lẻ như OSI, nhưng vì nó được phân định quá rõ ràng nên được đưa vào thi khá nhiều
 
-  <img width="177" height="329" alt="image" src="https://github.com/user-attachments/assets/fefb233f-a73e-4786-8652-f7c19dd3d0c2" />
+  <img width="262" height="332" alt="image" src="https://github.com/user-attachments/assets/3f2f7eba-8f05-40b6-aa01-8c79bebce83b" />
+
 
 * Mô hình TCP/IP là mô hình thực tế gắn với Internet hơn. Các tầng có chức năng gần nhau được gom lại để tối ưu hóa việc xử lý của hệ điều hành và phần cứng.
 
-  <img width="190" height="302" alt="image" src="https://github.com/user-attachments/assets/847ea266-41e0-4a97-93cf-dd54965a5cc9" />
+  <img width="268" height="248" alt="image" src="https://github.com/user-attachments/assets/28357581-9ea8-4507-a4f3-fbe4ffbbc6d2" />
+
 
 ### 1. Tầng ứng dụng (Application Layer)
 
@@ -16,7 +18,8 @@ Có 2 mô hình mạng chính: OSI và mô hình mạng TCP/IP
 
 * __Client-Server Architecture:__
 
-  <img width="576" height="347" alt="image" src="https://github.com/user-attachments/assets/b4144297-5a1a-4dcc-994a-2e5c565e2b04" />
+  <img width="629" height="394" alt="image" src="https://github.com/user-attachments/assets/02e87311-e882-4974-bd05-a4bc02dec2b9" />
+
 
  
     * Server là máy chủ luôn bật, có IP cố định.
@@ -115,13 +118,13 @@ Có 2 mô hình mạng chính: OSI và mô hình mạng TCP/IP
 >
 > * Mô tả bằng hình minh họa trực quan:
 >
-> <img width="952" height="685" alt="image" src="https://github.com/user-attachments/assets/eaea3ca2-f0ba-485e-922d-798207177d8d" />
+> <img width="952" height="685" alt="Screenshot 2026-07-05 113216" src="https://github.com/user-attachments/assets/796a3070-deca-4232-95bf-6575bf4533e2" />
 >
 > ---
 >
 > <details>
 > <summary>Hình minh họa nhưng có thêm phần proxy</summary> 
-> <img width="897" height="691" alt="image" src="https://github.com/user-attachments/assets/a344caa7-c87c-4d92-9d81-5088f291fdfe" />
+> <img width="897" height="691" alt="Screenshot 2026-07-05 122426" src="https://github.com/user-attachments/assets/644a44aa-2cab-4508-bf06-42690f847ae8" />
 > </details>
 >
 > ---
@@ -129,8 +132,7 @@ Có 2 mô hình mạng chính: OSI và mô hình mạng TCP/IP
 
 * __Peer-to-Peer (P2P) Architecture:__
 
-  <img width="1676" height="788" alt="image" src="https://github.com/user-attachments/assets/143a2ed6-5ba1-4a94-bac5-e92c96941238" />
-
+  <img width="1676" height="788" alt="image" src="https://github.com/user-attachments/assets/dedc0486-9651-4a6d-b25b-d1e7a0e66802" />
 
     * Các máy tham gia (peers) có vai trò bình đẳng, vừa là client vừa là server.
     * Tính mở rộng cao (Self-scalability) nhưng quản lý phức tạp.
@@ -152,9 +154,9 @@ Có 2 mô hình mạng chính: OSI và mô hình mạng TCP/IP
 > 
 > Sơ đồ mô hình kết nối TCP:
 >
-> <img width="621" height="304" alt="image" src="https://github.com/user-attachments/assets/337261f2-41f7-4091-a6c3-71ef34d160df" />
+> <img width="518" height="578" alt="image" src="https://github.com/user-attachments/assets/0c0aba81-e13d-4fc1-baff-c13a80aa6b15" />
 > 
-> <img width="3400" height="2926" alt="image" src="https://github.com/user-attachments/assets/424c42b8-de4d-4715-8ee2-90bf7f801b44" />
+
 
 
   * Datagram Socket (SOCK_DGRAM) – Gắn liền với UDP:
@@ -166,7 +168,8 @@ Có 2 mô hình mạng chính: OSI và mô hình mạng TCP/IP
 > 
 > Sơ đồ mô hình UDP:
 >
-> <img width="561" height="519" alt="image" src="https://github.com/user-attachments/assets/9a86d056-9f45-4f3c-9d1d-5e96dd67855e" />
+> <img width="518" height="414" alt="image" src="https://github.com/user-attachments/assets/b1e4aad1-9806-451a-8ef5-6ccdd5f0c30c" />
+
 
 **Các giao thức cốt lõi**:
 
@@ -214,7 +217,8 @@ Có 2 mô hình mạng chính: OSI và mô hình mạng TCP/IP
         * Khi dùng TCP kết nối ta biết nó sẽ tốn 1 RTT nhờ hiểu được cơ chế 3-way handshake
         * Sau đó lại tốn thêm 1 RTT nữa để gửi yêu cầu nhận nội dung, và đợi server gửi lại nội dung
         * Vậy tổng tất cả là 2 RTT cho mỗi lần gửi nhận. Điều đáng nói ở đây với Non-Persistent HTTP là **TCP connection sẽ bị đóng kết nối sau khi server gửi xong nội dung**.
-     <img width="504" height="446" alt="image" src="https://github.com/user-attachments/assets/676bf166-6743-4b74-a68a-81c10e7e199f" />
+     <img width="526" height="420" alt="image" src="https://github.com/user-attachments/assets/ec14aabb-7cbf-47bc-a8b2-9800ddb57371" />
+
 
   > [!NOTE]
   > Nhắc đến 3-way handshake có thể sẽ gây ra thắc mắc ở đây, rằng nếu dùng TCP connection như vậy thì phải tốn 1.5 RTT mới đúng. Nhưng thực ra gói tin `ACK` cuối cùng được client gửi cùng lượt với request yêu cầu nhận thông tin rồi. Vậy nên đoạn khởi tạo TCP connection đầu tiên ta vẫn tạm tính là 1 RTT.
