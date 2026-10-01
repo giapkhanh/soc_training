@@ -390,7 +390,7 @@ Chia lớp A, B, C cố định gây lãng phí IP (ví dụ Class A cấp cho 1
 
 ---
 
-##### 4. Các địa chỉ IP ĐẶC BIỆT cần thuộc lòng
+## 4. Các địa chỉ IP ĐẶC BIỆT cần thuộc lòng
 
 1. **`127.0.0.1` (Loopback / Localhost):** 
    * Trỏ về chính máy tính của bạn. Dùng cho Developer chạy test server (`http://localhost:3000`). Dải `127.0.0.0/8` đều bị bảo lưu cho Loopback.
